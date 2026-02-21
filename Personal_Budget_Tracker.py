@@ -1,9 +1,8 @@
 # Python Final Project - Personal Budget Calculator
 print("Hello World!")
-print("hi")
-
 
 # HELLO EVERYONE PLEASE PUT YOUR CODE UNDER THIS LINE
+
 
 
 # Displaying the Main Menu and calling the functions based on what the user enters.
@@ -30,7 +29,7 @@ def main():
         option = input("\n    Please enter your option (1, 2, 3, 4, 5, 6, 7): ")
 
         if option == "1":
-                print("\n ADDING INCOME FUNCTION WILL BE CALLED (KAMSI)")
+            print("\n ADDING INCOME FUNCTION WILL BE CALLED (KAMSI)")
             
         elif option == "2":
             print("\n ADDING EXPENSE FUNCTION WILL BE CALLED (KAMSI)")

@@ -1,5 +1,13 @@
+# Python Final Project - Personal Budget Calculator
+class Transaction:
+    def __init__(self, t_type, category, description, amount):
+        self.t_type = t_type # Income or Expense
+        self.category = category        # "Food", "Bills", "Salary", etc.
+        self.description = description
+        self.amount = amount
+
+
 income_info = {} 
-income = []     
 expense_cat = {
     1: "Food",
     2: "Transportation",
@@ -7,10 +15,9 @@ expense_cat = {
     4: "Bills",
     5: "Other"
 }
+# Setting monthly budget limits for expense categories.
+# Setting 0 as a placeholder. Changes when user inputs something else.
 budget_limits = {"Food": 0, "Transportation": 0, "Entertainment": 0, "Bills": 0}
-expense = []
-# Python Final Project - Personal Budget Calculator
-print("Hello World!")
 
 # HELLO EVERYONE PLEASE PUT YOUR CODE UNDER THIS LINE
 
@@ -36,15 +43,40 @@ def setting_budget(budget_limits):
     else:
         print("That category does not exist. Please try again.")
 
+def view_budget_summary(budget_limits, expense_list):
+    print("\n--- Monthly Budget Summary ---")
+    print(f"{'Category':<15} | {'Budget':<10} | {'Spent':<10} | {'Remaining':<10}")
+    print("-" * 55)
+    
+    # Dictionary to keep track of totals per category
+    totals = {cat: 0 for cat in budget_limits}
+    
+    # Adding up the expenses
+    for item in expense_list:
+        cat = item.category
+        if cat in totals:
+            totals[cat] += item.amount
+    
+    # Display the math
+    for cat, limit in budget_limits.items():
+        spent = totals[cat]
+        remaining = limit - spent
+        
+        # Warning when approaching or exceeding limits
+        status = ""
+        if spent > limit and limit > 0:
+            status = "!! OVER BUDGET !!"
+        elif spent >= limit * 0.9 and limit > 0:
+            status = "* Close to limit *"
+
+        print(f"{cat:<15} | ${limit:>8.2f} | ${spent:>8.2f} | ${remaining:>9.2f}  {status}")
 
 # Displaying the Main Menu and calling the functions based on what the user enters.
 def main():
     # These are the shared data structures.
     all_transactions = []
-    
-    # Setting monthly budget limits for expense categories.
-    # Setting 0 as a placeholder. Changes when user inputs something else.
-   
+    income = []
+    expense = []
     
     # Main Menu System
     while True:
@@ -61,13 +93,13 @@ def main():
         option = input("\n    Please enter your option (1, 2, 3, 4, 5, 6, 7): ")
 
         if option == "1":
-            option_income()
+            add_income(income)
             
         elif option == "2":
-            option_expense()
+            add_expense(expense, budget_limits)
             
         elif option == "3":
-            option_view()
+            view_transactions(income, expense)
             
         elif option == "4":
             print("\n SETTING THE MONTHLY BUDGET FUNCTION WILL BE CALLED (HEBA)")
@@ -75,7 +107,8 @@ def main():
             
         elif option == "5":
             print("\n VIEWING BUDGET SUMMARY FUNCTION WILL BE CALLED (KAMSI AND HEBA)")
-                
+            view_budget_summary(budget_limits, expense)
+            
         elif option == "6":
             print("\n GENERATING REPORT FUNCTION WILL BE CALLED (ZARA)")
             
@@ -91,30 +124,34 @@ def main():
 
             
 
-def option_income():
+def add_income(income_list):
     print("You have selected the Add Income option.\nEnter your details below")
     
-    income_info["description"] = str(input("Enter income description: "))
-    income_info["amount"] = float(input("Enter the amount: "))
+    description = input("Enter income description: ")
+    try:
+        amount = float(input("Enter the amount: "))
 
-    if income_info["amount"] >= 1:
-        print(" Income added successfully!") 
-    else:
-        print("Number cannot be less than 1. Type out your amount once more!")
-        income_info["amount"] = float(input("Enter the amount: "))
-        print("Income added successfully!") 
-
-    income.append(income_info.copy())
+        # 2. Simplified logic: if amount is valid, save it. 
+        if amount >= 1:
+            # 3. Use the list passed into the function (income_list) 
+            # and the Class blueprint
+            new_income = Transaction("Income", "N/A", description, amount)
+            income_list.append(new_income)
+            print("Income added successfully!") 
+        else:
+            print("Error: Amount must be at least $1.00. Transaction cancelled.")
+            
+    except ValueError:
+        print("Error: Please enter a valid number for the amount.")
 
     print("\n")
-    
-    user_input = input("Press the Enter key to continue: ")
-    if user_input == "":
+    enter = input("Press the Enter key to continue...")
+    if enter == "":
         print("Continuing...")
         print("\n")
 
 
-def option_expense():
+def add_expense(expense, budget_limits):
     print("Select a category. Choose an option from 1-5\n ")
     
     for key, value in expense_cat.items():
@@ -125,11 +162,10 @@ def option_expense():
     if user_input in expense_cat:
         expense_description = str(input("Enter expense description: "))
         expense_amount = float(input("Enter the amount: "))
-        expense.append({
-            "category": expense_cat[user_input],
-            "description": expense_description,
-            "amount": expense_amount
-        })
+        # Create the object using your class blueprint
+        new_expense = Transaction("Expense", expense_cat[user_input], expense_description, expense_amount)
+        expense.append(new_expense)
+        
         remaining_food_budget(budget_limits, expense)
         print("Expense added successfully!")
         
@@ -166,16 +202,33 @@ def remaining_food_budget(budget_limits, expense):
     print(f"Total Spent on Food: ${total_food_spent}")
     print(f"Remaining Food Budget: ${remaining}")
 
+def view_transactions(income_list, expense_list):
+    print("\n--- VIEWING ALL TRANSACTIONS ---")
+    print("\n[ Income Transactions ]")
+    if not income:
+        print("No income recorded yet.")
+    else:
+        for item in income:
+            print(f"- {item.description}: ${item.amount:.2f}")
 
-def option_view():
-    print("You have selected the View All Transactions options")
-    print("These are your income inputs saved:", *income)
-    print("\n")
-    print("These are your saved expense inputs:",*expense)
-    user_input = input("Press the Enter key to continue: ")
-    if user_input == "":
-        print("Continuing...")
-        print("\n")
+    print("\n[ Expense Transactions ]")
+    if not expense:
+        print("No expenses recorded yet.")
+    else:
+        for item in expense:
+            print(f"- {item.category} ({item.description}): ${item.amount:.2f}")
+    print("\n" + "-"*30)
+    input("Press the Enter key to continue...")
+
+# def option_view(income, expense):
+#     print("You have selected the View All Transactions options")
+#     print("These are your income inputs saved:", *income)
+#     print("\n")
+#     print("These are your saved expense inputs:",*expense)
+#     user_input = input("Press the Enter key to continue: ")
+#     if user_input == "":
+#         print("Continuing...")
+#         print("\n")
         
 # Running the program.
 if __name__ == "__main__":

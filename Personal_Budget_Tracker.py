@@ -180,4 +180,3 @@ def option_view():
 # Running the program.
 if __name__ == "__main__":
     main()
-

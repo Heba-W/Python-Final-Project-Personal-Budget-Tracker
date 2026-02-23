@@ -39,8 +39,8 @@ def main():
     # Main Menu System
     while True:
         # Displaying options.
-        print("\n\n  ----- Welcome to your Personal Budget Tracker! -----\n")
-        print("\n\n  ----- What Would You Like to Do? -----\n")
+        print("\n\n  ----- Welcome to your Personal Budget Tracker! -----")
+        print("\n  ----- What Would You Like to Do? -----\n")
         print("    1. Add Income")
         print("    2. Add Expense")
         print("    3. View All Transactions")
@@ -60,11 +60,11 @@ def main():
             print("\n VIEWING TRANSACIONS FUNCTION WILL BE CALLED (KAMSI)")
             
         elif option == "4":
-            print("\n SETTING THE MONTHLY? BUDGET FUNCTION WILL BE CALLED (HEBA)")
+            print("\n SETTING THE MONTHLY BUDGET FUNCTION WILL BE CALLED (HEBA)")
             setting_budget(budget_limits)
             
         elif option == "5":
-            print("\n VIEWING BUDGET SUMMARY FUNCTION WILL BE CALLED (HEBA)")
+            print("\n VIEWING BUDGET SUMMARY FUNCTION WILL BE CALLED (KAMSI AND HEBA)")
                 
         elif option == "6":
             print("\n GENERATING REPORT FUNCTION WILL BE CALLED (ZARA)")

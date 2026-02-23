@@ -1,3 +1,14 @@
+income_info = {} 
+income = []     
+expense_cat = {
+    1: "Food",
+    2: "Transportation",
+    3: "Entertainment",
+    4: "Bills",
+    5: "Other"
+}
+budget_limits = {"Food": 0, "Transportation": 0, "Entertainment": 0, "Bills": 0}
+expense = []
 # Python Final Project - Personal Budget Calculator
 print("Hello World!")
 
@@ -24,7 +35,6 @@ def setting_budget(budget_limits):
             print("Invalid input. Please try again and enter a numeric value for the budget amount.")
     else:
         print("That category does not exist. Please try again.")
-            
 
 
 # Displaying the Main Menu and calling the functions based on what the user enters.
@@ -34,7 +44,7 @@ def main():
     
     # Setting monthly budget limits for expense categories.
     # Setting 0 as a placeholder. Changes when user inputs something else.
-    budget_limits = {"Food": 0, "Transportation": 0, "Entertainment": 0, "Bills": 0}
+   
     
     # Main Menu System
     while True:
@@ -51,13 +61,13 @@ def main():
         option = input("\n    Please enter your option (1, 2, 3, 4, 5, 6, 7): ")
 
         if option == "1":
-            print("\n ADDING INCOME FUNCTION WILL BE CALLED (KAMSI)")
+            option_income()
             
         elif option == "2":
-            print("\n ADDING EXPENSE FUNCTION WILL BE CALLED (KAMSI)")
+            option_expense()
             
         elif option == "3":
-            print("\n VIEWING TRANSACIONS FUNCTION WILL BE CALLED (KAMSI)")
+            option_view()
             
         elif option == "4":
             print("\n SETTING THE MONTHLY? BUDGET FUNCTION WILL BE CALLED (HEBA)")
@@ -74,10 +84,100 @@ def main():
             print("\n    Thanks for using the Personal Budget Tracker! Goodbye!")
             print("\n  ----------------------------------------------------")
             break
-        else: # If the user inputs something other than 1, 2, 3, or 4, ask them again until they enter a valid number.
+        else:
+            # If the user inputs something other than 1–7
             print("\n    Invalid option. Please try again and enter a number between 1 and 7.")
             print("\n  ----------------------------------------------------")
 
+            
+
+def option_income():
+    print("You have selected the Add Income option.\nEnter your details below")
+    
+    income_info["description"] = str(input("Enter income description: "))
+    income_info["amount"] = float(input("Enter the amount: "))
+
+    if income_info["amount"] >= 1:
+        print(" Income added successfully!") 
+    else:
+        print("Number cannot be less than 1. Type out your amount once more!")
+        income_info["amount"] = float(input("Enter the amount: "))
+        print("Income added successfully!") 
+
+    income.append(income_info.copy())
+
+    print("\n")
+    
+    user_input = input("Press the Enter key to continue: ")
+    if user_input == "":
+        print("Continuing...")
+        print("\n")
+
+
+def option_expense():
+    print("Select a category. Choose an option from 1-5\n ")
+    
+    for key, value in expense_cat.items():
+        print(f"{key}. {value}")
+    
+    user_input = int(input("Enter category"))
+
+    if user_input in expense_cat:
+        expense_description = str(input("Enter expense description: "))
+        expense_amount = float(input("Enter the amount: "))
+        expense.append({
+            "category": expense_cat[user_input],
+            "description": expense_description,
+            "amount": expense_amount
+        })
+        remaining_food_budget(budget_limits, expense)
+        print("Expense added successfully!")
+        
+    else:
+        print("Invalid category.")
+        user_input = int(input("Enter category"))
+        expense_description = str(input("Enter expense description: "))
+        expense_amount = float(input("Enter the amount: "))
+        expense.append({
+            "category": expense_cat[user_input],
+            "description": expense_description,
+            "amount": expense_amount
+        })
+        print("Expense added successfully!")
+
+    print("\n")
+    
+    user_input = input("Press the Enter key to continue: ")
+    if user_input == "":
+        print("Continuing...")
+        print("\n")
+
+def remaining_food_budget(budget_limits, expense):
+    food_budget = budget_limits["Food"]
+    
+    total_food_spent = 0
+    for item in expense:
+        if item["category"] == "Food":
+            total_food_spent += item["amount"]
+    
+    remaining = food_budget - total_food_spent
+    
+    print(f"Food Budget: ${food_budget}")
+    print(f"Total Spent on Food: ${total_food_spent}")
+    print(f"Remaining Food Budget: ${remaining}")
+
+
+def option_view():
+    print("You have selected the View All Transactions options")
+    print("These are your income inputs saved:", *income)
+    print("\n")
+    print("These are your saved expense inputs:",*expense)
+    user_input = input("Press the Enter key to continue: ")
+    if user_input == "":
+        print("Continuing...")
+        print("\n")
+        
 # Running the program.
 if __name__ == "__main__":
     main()
+

@@ -184,30 +184,22 @@ def generate_report(transactions, budget_limits):
     print(f"Total Expenses : ${total_expense:.2f}")
     print(f"Current Balance: ${balance:.2f}\n")
 
-    # Expenses by category
-    print(f"{'Category':<15} | {'Spent':<10} | {'Budget':<10} | {'Remaining':<10} | {'Last Entry':<16}")
-    print("-" * 70)
-
-    totals = {cat: 0 for cat in budget_limits}
-    last_entry = {cat: "N/A" for cat in budget_limits}
-
-    # Track totals and last transaction timestamp per category
-    for t in transactions:
-        if t.t_type == "Expense" and t.category in totals:
-            totals[t.category] += t.amount
-            last_entry[t.category] = t.date  # last transaction timestamp
-
-    # Display category summary
+    # Prepare list of categories with totals, last entry, remaining, etc.
+    category_totals = []
     for cat, limit in budget_limits.items():
-        spent = totals[cat]
+        spent = sum(t.amount for t in transactions if t.t_type == "Expense" and t.category == cat)
+        last_time = max([t.date for t in transactions if t.t_type == "Expense" and t.category == cat], default="N/A")
         remaining = limit - spent
-        status = ""
-        if limit > 0:
-            if spent > limit:
-                status = "!! OVER BUDGET !!"
-            elif spent >= limit * 0.9:
-                status = "* Warning: 90% used *"
-        print(f"{cat:<15} | ${spent:>8.2f} | ${limit:>8.2f} | ${remaining:>9.2f} | {last_entry[cat]:<16} {status}")
+        category_totals.append((cat, spent, limit, remaining, last_time))
+
+    # Sort categories by total spent descending
+    category_totals.sort(key=lambda x: x[1], reverse=True)
+
+    # Show % of total expenses per category
+    print("\n[Expense Distribution by Category]")
+    for cat, spent, _, _, _ in category_totals:
+        percent = (spent / total_expense * 100) if total_expense else 0
+        print(f"{cat:<15}: {percent:>5.1f}% of total expenses")
 
     # Detailed transactions
     print("\n[Detailed Transactions]")

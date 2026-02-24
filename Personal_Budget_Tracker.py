@@ -1,4 +1,4 @@
-###### Python Final Project - Personal Budget Calculator
+# Python Final Project - Personal Budget Calculator
 
 import os
 from datetime import datetime
@@ -115,32 +115,36 @@ def setting_budget(budget_limits):
         print("Error: Please enter numeric values only.")
     input("\nPress Enter to continue...")
 
+# Function to view a budget summary
 def view_budget_summary(budget_limits, transactions):
     print("\n--- Monthly Budget Summary ---")
+    print(f"Report generated at: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
     print(f"{'Category':<15} | {'Budget':<10} | {'Spent':<10} | {'Remaining':<10}")
     print("-" * 55)
+    print("-" * 70)
     
     # Calculating totals
     totals = {cat: 0 for cat in budget_limits}
+    last_entry = {cat: "N/A" for cat in budget_limits}
 
+    # Calculate totals and track last transaction date per category
     for item in transactions:
         if item.t_type == "Expense" and item.category in totals:
             totals[item.category] += item.amount
+            # Update last entry timestamp for this category
+            last_entry[item.category] = item.date
     
     # Display the math
     for cat, limit in budget_limits.items():
         spent = totals[cat]
         remaining = limit - spent
-        
-        # Warning when approaching (around 90%) or exceeding limits
         status = ""
         if limit > 0:
             if spent > limit:  
                 status = "!! OVER BUDGET !!"
             elif spent >= limit * 0.9:
-                status = f"* Warning: You have reached 90% of your budget. *"
-
-        print(f"{cat:<15} | ${limit:>8.2f} | ${spent:>8.2f} | ${remaining:>9.2f}  {status}")
+                status = f"* Warning: 90% used *"
+        print(f"{cat:<15} | ${limit:>8.2f} | ${spent:>8.2f} | ${remaining:>9.2f} | {last_entry[cat]:<16} {status}")
 
 # Function to view transactions
 def view_transactions(transactions):
@@ -166,6 +170,51 @@ def view_transactions(transactions):
     print("\n" + "-"*30)
     input("Press the Enter key to continue...")
 
+# Function to generate a final report
+def generate_report(transactions, budget_limits):
+    print("\n--- MONTHLY FINANCIAL REPORT ---")
+    print(f"Report generated at: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+
+    # Calculate totals
+    total_income = sum(t.amount for t in transactions if t.t_type == "Income")
+    total_expense = sum(t.amount for t in transactions if t.t_type == "Expense")
+    balance = total_income - total_expense
+
+    print(f"Total Income   : ${total_income:.2f}")
+    print(f"Total Expenses : ${total_expense:.2f}")
+    print(f"Current Balance: ${balance:.2f}\n")
+
+    # Expenses by category
+    print(f"{'Category':<15} | {'Spent':<10} | {'Budget':<10} | {'Remaining':<10} | {'Last Entry':<16}")
+    print("-" * 70)
+
+    totals = {cat: 0 for cat in budget_limits}
+    last_entry = {cat: "N/A" for cat in budget_limits}
+
+    # Track totals and last transaction timestamp per category
+    for t in transactions:
+        if t.t_type == "Expense" and t.category in totals:
+            totals[t.category] += t.amount
+            last_entry[t.category] = t.date  # last transaction timestamp
+
+    # Display category summary
+    for cat, limit in budget_limits.items():
+        spent = totals[cat]
+        remaining = limit - spent
+        status = ""
+        if limit > 0:
+            if spent > limit:
+                status = "!! OVER BUDGET !!"
+            elif spent >= limit * 0.9:
+                status = "* Warning: 90% used *"
+        print(f"{cat:<15} | ${spent:>8.2f} | ${limit:>8.2f} | ${remaining:>9.2f} | {last_entry[cat]:<16} {status}")
+
+    # Detailed transactions
+    print("\n[Detailed Transactions]")
+    for t in transactions:
+        print(t.display_info())
+
+    input("\nPress Enter to continue...")
         
 # Displaying the Main Menu and calling the functions based on what the user enters.
 def main():
@@ -196,15 +245,13 @@ def main():
             view_transactions(transactions)
             
         elif option == "4":
-            print("\n SETTING THE MONTHLY BUDGET FUNCTION WILL BE CALLED (HEBA)")
             setting_budget(budget_limits)
             
         elif option == "5":
-            print("\n VIEWING BUDGET SUMMARY FUNCTION WILL BE CALLED (KAMSI AND HEBA)")
             view_budget_summary(budget_limits, transactions)
             
         elif option == "6":
-            print("\n GENERATING REPORT FUNCTION WILL BE CALLED (ZARA)")
+            generate_report(transactions, budget_limits)
             
         # If the user inputs 7, the loop will stop and end the program.
         elif option == "7":

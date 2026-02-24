@@ -1,4 +1,4 @@
-# Python Final Project - Personal Budget Calculator
+###### Python Final Project - Personal Budget Calculator
 
 import os
 from datetime import datetime
@@ -27,7 +27,7 @@ expense_cat = {
 budget_limits = {"Food": 0, "Transportation": 0, "Entertainment": 0, "Bills": 0, "Other": 0}
 
 # Function to add income
-def add_income(income_list):
+def add_income(transactions):
     print("You have selected the Add Income option.\nEnter your details below")
     
     description = input("Enter income description: ")
@@ -39,7 +39,7 @@ def add_income(income_list):
             # 3. Use the list passed into the function (income_list) 
             # and the Class blueprint
             new_income = Transaction("Income", "N/A", description, amount)
-            income_list.append(new_income)
+            transactions.append(new_income)
             print("Income added successfully!") 
         else:
             print("Error: Amount must be at least $1.00. Transaction cancelled.")
@@ -54,7 +54,7 @@ def add_income(income_list):
         print("\n")
 
 # Function to add expense
-def add_expense(expense_list, budget_limits):
+def add_expense(transactions, budget_limits):
     print("\n--- Add Expense ---")
     for key, value in expense_cat.items():
         print(f"{key}. {value}")
@@ -66,11 +66,11 @@ def add_expense(expense_list, budget_limits):
             if amt > 0:
                 # Use the Transaction class as required by rubric
                 new_expense = Transaction("Expense", expense_cat[choice], desc, amt)
-                expense_list.append(new_expense)
+                transactions.append(new_expense)
                 print(f"Successfully added ${amt:.2f} to {expense_cat[choice]}!")
                 
                 # Check budget for this specific category (Task 3 requirement)
-                check_category_limit(expense_cat[choice], budget_limits, expense_list)
+                check_category_limit(expense_cat[choice], budget_limits, transactions)
             else:
                 print("Amount must be positive.")
         else:
@@ -80,9 +80,10 @@ def add_expense(expense_list, budget_limits):
     
     input("\nPress Enter to continue...")
 
-def check_category_limit(category, budget_limits, expense_list):
+def check_category_limit(category, budget_limits, transactions):
     if category in budget_limits and budget_limits[category] > 0:
-        total_spent = sum(item.amount for item in expense_list if item.category == category)
+        total_spent = sum(item.amount for item in transactions if item.t_type == "Expense" and item.category == category)
+        
         limit = budget_limits[category]
         
         if total_spent > limit:
@@ -92,25 +93,29 @@ def check_category_limit(category, budget_limits, expense_list):
 
 # Function to Set a Monthly Budget
 def setting_budget(budget_limits):
-    print(" --- Set Monthly Budget ---")
-    print("Available Categories: Food, Transportation, Entertainment, Bills")
-    
-    # Asking the user which category they want to set a budget for, and storing it.
-    category = input("Please enter the category you want to set a budget for: ").title()
-    
-    # Checking if the category exists in the dictionary
-    if category in budget_limits:
-        try:
-            # Ask for the limit and convert/store it as a float.
-            amount = float(input(f"Enter the budget amount for {category}: "))
-            budget_limits[category] = amount
-            print(f"Adding the budget was successful! The monthly budget for {category} is now ${amount:.2f}")
-        except ValueError:
-            print("Error: Invalid input. Please try again and enter a numeric value for the budget amount.")
-    else:
-        print("Error: That category does not exist. Please try again.")
+    print("\n--- Set Monthly Budget ---")
+    # Display numbered categories (reuse your expense_cat dictionary)
+    for key, value in expense_cat.items():
+        print(f"{key}. {value}")
+    try:
+        choice = int(input("Select a category to set a budget for (1-5): "))
+        if choice in expense_cat:
+            category = expense_cat[choice]
+            
+            amount = float(input(f"Enter the monthly budget for {category}: $"))
+            
+            if amount >= 0:
+                budget_limits[category] = amount
+                print(f"Budget for {category} successfully set to ${amount:.2f}")
+            else:
+                print("Budget must be zero or greater.")
+        else:
+            print("Invalid category selection.")
+    except ValueError:
+        print("Error: Please enter numeric values only.")
+    input("\nPress Enter to continue...")
 
-def view_budget_summary(budget_limits, expense_list):
+def view_budget_summary(budget_limits, transactions):
     print("\n--- Monthly Budget Summary ---")
     print(f"{'Category':<15} | {'Budget':<10} | {'Spent':<10} | {'Remaining':<10}")
     print("-" * 55)
@@ -118,8 +123,8 @@ def view_budget_summary(budget_limits, expense_list):
     # Calculating totals
     totals = {cat: 0 for cat in budget_limits}
 
-    for item in expense_list:
-        if item.category in totals:
+    for item in transactions:
+        if item.t_type == "Expense" and item.category in totals:
             totals[item.category] += item.amount
     
     # Display the math
@@ -127,31 +132,37 @@ def view_budget_summary(budget_limits, expense_list):
         spent = totals[cat]
         remaining = limit - spent
         
-        # Warning when approaching or exceeding limits
+        # Warning when approaching (around 90%) or exceeding limits
         status = ""
         if limit > 0:
-            status = "!! OVER BUDGET !!"
-        elif spent >= limit * 0.9:
-            status = "* Warning: 90% Reached *"
+            if spent > limit:  
+                status = "!! OVER BUDGET !!"
+            elif spent >= limit * 0.9:
+                status = f"* Warning: You have reached 90% of your budget. *"
 
         print(f"{cat:<15} | ${limit:>8.2f} | ${spent:>8.2f} | ${remaining:>9.2f}  {status}")
 
 # Function to view transactions
-def view_transactions(income_list, expense_list):
+def view_transactions(transactions):
     print("\n--- VIEWING ALL TRANSACTIONS ---")
     print("\n[ Income Transactions ]")
-    if not income_list:
-        print("No income recorded yet.")
-    else:
-        for item in income_list:
+    found_income = False
+    for item in transactions:
+        if item.t_type == "Income":
             print(item.display_info())
+            found_income = True
+    if not found_income:
+        print("No income recorded yet.")
 
     print("\n[ Expense Transactions ]")
-    if not expense_list:
-        print("No expenses recorded yet.")
-    else:
-        for item in expense_list:
+    found_expense = False
+    for item in transactions:
+        if item.t_type == "Expense":
             print(item.display_info())
+            found_expense = True
+    if not found_expense:
+        print("No expenses recorded yet.")
+        
     print("\n" + "-"*30)
     input("Press the Enter key to continue...")
 
@@ -159,9 +170,7 @@ def view_transactions(income_list, expense_list):
 # Displaying the Main Menu and calling the functions based on what the user enters.
 def main():
     # These are the shared data structures.
-    all_transactions = []
-    income = []
-    expense = []
+    transactions = []
     
     # Main Menu System
     while True:
@@ -178,13 +187,13 @@ def main():
         option = input("\n    Please enter your option (1, 2, 3, 4, 5, 6, 7): ")
 
         if option == "1":
-            add_income(income)
+            add_income(transactions)
             
         elif option == "2":
-            add_expense(expense, budget_limits)
+            add_expense(transactions, budget_limits)
             
         elif option == "3":
-            view_transactions(income, expense)
+            view_transactions(transactions)
             
         elif option == "4":
             print("\n SETTING THE MONTHLY BUDGET FUNCTION WILL BE CALLED (HEBA)")
@@ -192,7 +201,7 @@ def main():
             
         elif option == "5":
             print("\n VIEWING BUDGET SUMMARY FUNCTION WILL BE CALLED (KAMSI AND HEBA)")
-            view_budget_summary(budget_limits, expense)
+            view_budget_summary(budget_limits, transactions)
             
         elif option == "6":
             print("\n GENERATING REPORT FUNCTION WILL BE CALLED (ZARA)")

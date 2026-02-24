@@ -16,6 +16,69 @@ class Transaction:
             return f"{self.date} | [INCOME] {self.description:<15} : ${self.amount:>8.2f}"
         return f"{self.date} | [{self.category:<12}] {self.description:<15} : ${self.amount:>8.2f}"
 
+# -----------------------------
+# SAVE / LOAD FUNCTIONS
+# -----------------------------
+DATA_FILE = "budget_data.txt"
+
+def save_data(transactions, budget_limits):
+    # """
+    # Saves all financial data to a text file.
+    # Sections:
+    #   [BUDGET_LIMITS] -> category|limit
+    #   [TRANSACTIONS]  -> type|category|description|amount|date
+    # """
+    try:
+        with open(DATA_FILE, "w", encoding="utf-8") as file:
+            # Save budget limits
+            file.write("[BUDGET_LIMITS]\n")
+            for category, limit in budget_limits.items():
+                file.write(f"{category}|{limit}\n")
+            
+            # Save all transactions (income + expense)
+            file.write("[TRANSACTIONS]\n")
+            for t in transactions:
+                file.write(f"{t.t_type}|{t.category}|{t.description}|{t.amount}|{t.date}\n")
+    except OSError as e:
+        print(f"Error saving data: {e}")
+
+def load_data(transactions, budget_limits):
+    """
+    Loads financial data from the file.
+    Reconstructs transactions and budget limits.
+    """
+    if not os.path.exists(DATA_FILE):
+        return
+
+    section = None
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as file:
+            for line in file:
+                line = line.strip()
+                if not line:
+                    continue
+                if line == "[BUDGET_LIMITS]":
+                    section = "BUDGET_LIMITS"
+                    continue
+                elif line == "[TRANSACTIONS]":
+                    section = "TRANSACTIONS"
+                    continue
+
+                try:
+                    if section == "BUDGET_LIMITS":
+                        category, limit = line.split("|")
+                        budget_limits[category] = float(limit)
+                    elif section == "TRANSACTIONS":
+                        t_type, category, description, amount, date = line.split("|")
+                        t = Transaction(t_type, category, description, float(amount))
+                        t.date = date  # restore original timestamp
+                        transactions.append(t)
+                except ValueError:
+                    # skip corrupted lines
+                    continue
+    except OSError as e:
+        print(f"Error loading data: {e}")
+
 expense_cat = {
     1: "Food",
     2: "Transportation",
@@ -23,8 +86,6 @@ expense_cat = {
     4: "Bills",
     5: "Other"
 }
-# Monthly budget limits for expense categories. 0 is placeholder. Changes when user inputs something else.
-budget_limits = {"Food": 0, "Transportation": 0, "Entertainment": 0, "Bills": 0, "Other": 0}
 
 # Function to add income
 def add_income(transactions):
@@ -188,7 +249,8 @@ def generate_report(transactions, budget_limits):
     category_totals = []
     for cat, limit in budget_limits.items():
         spent = sum(t.amount for t in transactions if t.t_type == "Expense" and t.category == cat)
-        last_time = max([t.date for t in transactions if t.t_type == "Expense" and t.category == cat], default="N/A")
+        expenses_in_cat = [t.date for t in transactions if t.t_type == "Expense" and t.category == cat]
+        last_time = max(expenses_in_cat) if expenses_in_cat else "N/A"
         remaining = limit - spent
         category_totals.append((cat, spent, limit, remaining, last_time))
 
@@ -210,8 +272,12 @@ def generate_report(transactions, budget_limits):
         
 # Displaying the Main Menu and calling the functions based on what the user enters.
 def main():
-    # These are the shared data structures.
+    # Initialize main data structures
     transactions = []
+    budget_limits = {"Food":0, "Transportation":0, "Entertainment":0, "Bills":0, "Other":0}
+
+    # Load previously saved data
+    load_data(transactions, budget_limits)
     
     # Main Menu System
     while True:
@@ -247,6 +313,7 @@ def main():
             
         # If the user inputs 7, the loop will stop and end the program.
         elif option == "7":
+            save_data(transactions, budget_limits)
             print("\n    Thanks for using the Personal Budget Tracker! Goodbye!")
             print("\n  ----------------------------------------------------")
             break

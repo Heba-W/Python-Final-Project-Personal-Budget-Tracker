@@ -1,0 +1,15 @@
+[BUDGET_LIMITS]
+Food|1000.0
+Transportation|0.0
+Entertainment|0.0
+Bills|0.0
+Other|0.0
+[TRANSACTIONS]
+Income|N/A|sal|1000.0|2026-02-24 16:43
+Expense|Food|hi|20.0|2026-02-24 16:44
+Income|N/A|job|100.0|2026-02-24 16:49
+Expense|Food|eat|10.0|2026-02-24 16:50
+Income|N/A|job|100.0|2026-02-24 17:14
+Income|N/A|job|100.0|2026-02-24 17:17
+Expense|Food|shopping|10.0|2026-02-24 17:21
+Expense|Food|test|900.0|2026-02-24 17:39

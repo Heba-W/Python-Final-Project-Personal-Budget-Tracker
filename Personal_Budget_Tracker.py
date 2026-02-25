@@ -22,7 +22,7 @@ class Transaction:
         return f"{self.date} | {self.category} | {self.description:<10} | ${self.amount:>8.2f}"
 
 # Text file where all information is stored.
-DATA_FILE = "budget_data.txt"
+DATA_FILE = "data.txt"
 
 # Saving all data, such as transactions and budget limits, to a text file.
 def save_data(transactions, budget_limits):

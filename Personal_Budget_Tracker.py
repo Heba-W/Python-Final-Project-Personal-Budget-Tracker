@@ -211,7 +211,7 @@ def setting_budget(budget_limits, transactions):
 
             amount = float(input(f"    Enter the monthly budget for {category}: $"))
             
-            if amount >= 0:
+            if amount > 0:
                 # Update the budget_lists dictionary with the new amount.
                 budget_limits[category] = amount
                 print(f"    Budget for {category} successfully set to ${amount:.2f}.")

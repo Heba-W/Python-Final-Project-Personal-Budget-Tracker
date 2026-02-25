@@ -19,3 +19,5 @@ Expense|Food|test|80.0|2026-02-24 21:11
 Income|N/A|hiio|20.0|2026-02-25 07:00
 Expense|Food|ya|10.0|2026-02-25 07:30
 Expense|Food|eat|20.0|2026-02-25 07:31
+Income|N/A|salary|50.0|2026-02-25 08:32
+Expense|Food|groceries|25.0|2026-02-25 08:38

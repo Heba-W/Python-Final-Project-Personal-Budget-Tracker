@@ -80,7 +80,7 @@ def load_data(transactions, budget_limits):
     except OSError as e:
         print(f"    Error loading data: {e}")
 
-# Dictionary to map numbers to categories for user selection.
+# Dictionary for mapping numbers to categories for user selection.
 expense_cat = {
     1: "Food",
     2: "Transportation",
@@ -171,7 +171,7 @@ def check_category_limit(category, budget_limits, transactions):
 
 # Function to view all transactions
 def view_transactions(transactions):
-    print("\n    --- View All Transactions ---")
+    print("\n    --- All Transactions ---")
     
     # Displaying all income transactions.
     print("\n    - Income Transactions -")
@@ -280,7 +280,7 @@ def generate_report(transactions, budget_limits):
     total_expense = sum(t.amount for t in transactions if t.t_type == "Expense")
     remaining_balance = total_income - total_expense
 
-    # Summary of totals
+    # Displaying summary of totals
     print("\n    - Summary -")
     print(f"    Total Income   : ${total_income:.2f}")
     print(f"    Total Expenses : ${total_expense:.2f}")

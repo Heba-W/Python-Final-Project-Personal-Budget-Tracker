@@ -13,8 +13,8 @@ class Transaction:
         
     def display_info(self):
         if self.t_type == "Income":
-            return f"{self.date} | [INCOME] {self.description:<15} : ${self.amount:>8.2f}"
-        return f"{self.date} | [{self.category:<12}] {self.description:<15} : ${self.amount:>8.2f}"
+            return f"{self.date} | {self.description:<10} | ${self.amount:>8.2f}"
+        return f"{self.date} | {self.category} | {self.description:<10} | ${self.amount:>8.2f}"
 
 # -----------------------------
 # SAVE / LOAD FUNCTIONS
@@ -132,7 +132,7 @@ def add_expense(transactions, budget_limits):
                 # Use the Transaction class as required by rubric
                 new_expense = Transaction("Expense", expense_cat[choice], desc, amt)
                 transactions.append(new_expense)
-                print(f"    Successfully added expense of ${amt:.2f} to {expense_cat[choice]}!")
+                print(f"\n    Successfully added expense of ${amt:.2f} to {expense_cat[choice]}!")
                 category = expense_cat[choice]
                 limit = budget_limits.get(category, 0)
                 if limit > 0:
@@ -160,11 +160,11 @@ def check_category_limit(category, budget_limits, transactions):
         limit = budget_limits[category]
         
         if total_spent > limit:
-            print(f"    !!! WARNING: You have exceeded your {category} budget by ${total_spent - limit:.2f} !!!")
+            print(f"\n    !!! WARNING: You have exceeded your {category} budget by ${total_spent - limit:.2f} !!!")
         elif total_spent >= limit * 0.9:
-            print(f"    * Caution: You have used { (total_spent/limit)*100 :.1f}% of your {category} budget. *")
+            print(f"\n    * Caution: You have used { (total_spent/limit)*100 :.1f}% of your {category} budget. *")
         else:
-            print(f"    * You have used { (total_spent/limit)*100 :.1f}% of your {category} budget. *")
+            print(f"\n    * You have used { (total_spent/limit)*100 :.1f}% of your {category} budget. *")
 
 # Function to view all transactions
 def view_transactions(transactions):
@@ -187,8 +187,8 @@ def view_transactions(transactions):
     if not found_expense:
         print("    No expenses recorded yet.")
         
-    print("\n    ---------------------")
-    input("    Press the Enter key to continue...")
+    print("\n    -----------------------------")
+    input("\n    Press the Enter key to continue...")
 
 # Function to Set a Monthly Budget
 def setting_budget(budget_limits, transactions):
@@ -217,7 +217,7 @@ def setting_budget(budget_limits, transactions):
 
 # Function to view a budget summary
 def view_budget_summary(budget_limits, transactions):
-    print(f"\n    --- Budget Summary for {datetime.now().strftime('%Y-%m')}---")
+    print(f"\n    --- Budget Summary for This Month ---")
     print(f"    Summary generated at: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
     # Calculate total income and total expenses first
     total_income = sum(t.amount for t in transactions if t.t_type == "Income")
@@ -225,11 +225,10 @@ def view_budget_summary(budget_limits, transactions):
     current_balance = total_income - total_expense
 
     print(f"    INCOME:\n    Total Income: ${total_income:.2f}")
-    print(f"\n    EXPENSES BY CATEGORY:")
+    print(f"\n    EXPENSES BY CATEGORY:\n")
     
-    print(f"    {'Category':<15} | {'Budget':<10} | {'Spent':<10} | {'Remaining':<10}")
-    print("--------------------------------------------")
-    
+    print(f"    {'Category':<15} | {'Budget':<9} | {'Spent':<9} | {'Remaining':<10}")
+    print("    ----------------------------------------------------------")
     
     # Calculating totals for each seperate category
     totals = {cat: 0 for cat in budget_limits}
@@ -248,47 +247,31 @@ def view_budget_summary(budget_limits, transactions):
         status = ""
         if limit > 0:
             if spent > limit:  
-                status = "!! Warning: You are over budget !!"
+                status = "  !! Warning: You are over budget !!"
             elif spent >= limit * 0.9:
-                status = f"* Warning: 90% or more used. *"
-        print(f"{cat:<15} | ${limit:>8.2f} | ${spent:>8.2f} | ${remaining:>9.2f} | {last_entry[cat]:<16} {status}")
+                status = f" *Warning: 90% or more used.*"
+        print(f"    {cat:<15} | ${limit:>8.2f} | ${spent:>8.2f} | ${remaining:>9.2f} | {last_entry[cat]:<16} {status}")
 
     print(f"\n    Total Expenses: ${total_expense:.2f}")
-    print(f"\n    Current remaining Balance: ${current_balance:.2f}")
+    print(f"    Current remaining Balance: ${current_balance:.2f}")
+    input("\n    Press the Enter key to continue...")
     
 
 
 # Function to generate a final report
 def generate_report(transactions, budget_limits):
-    print("\n    --- Monthly Financial Report ---\n")
-    print(f"    Report generated at: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+    print("\n\n    --- Monthly Financial Report ---\n")
+    print(f"    Report generated at: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
     # Calculate totals
     total_income = sum(t.amount for t in transactions if t.t_type == "Income")
     total_expense = sum(t.amount for t in transactions if t.t_type == "Expense")
     remaining_balance = total_income - total_expense
 
-    print("\n    SUMMARY")
+    print("\n    - Summary -")
     print(f"    Total Income   : ${total_income:.2f}")
     print(f"    Total Expenses : ${total_expense:.2f}")
-    print(f"    Current Remaining Balance: ${remaining_balance:.2f}\n")
-    
-    # ----- Total Budget Utilization -----
-    total_budget = sum(budget_limits.values())
-
-    if total_budget > 0:
-        utilization = (total_expense / total_budget) * 100
-        print(f"    Total Budget Planned : ${total_budget:.2f}")
-        print(f"    Budget Utilization   : {utilization:.1f}%")
-
-        if utilization > 100:
-            print("    Status: You exceeded your overall budget!")
-        elif utilization >= 90:
-            print("    Status: You are very close to your total budget limit.")
-        else:
-            print("    Status: You are within your overall budget.")
-    else:
-        print("    No budgets have been set yet.")
+    print(f"    Current Remaining Balance: ${remaining_balance:.2f}")
 
     # Prepare list of categories with totals, last entry, remaining, etc.
     category_totals = []
@@ -303,16 +286,50 @@ def generate_report(transactions, budget_limits):
     category_totals.sort(key=lambda x: x[1], reverse=True)
 
     # Show % of total expenses per category
-    print("\n    Top Expense Distribution by Category")
+    print("\n    - Top Expense Distribution by Category -")
     for cat, spent, _, _, _ in category_totals:
         percent = (spent / total_expense * 100) if total_expense else 0
-        print(f"    {cat:<15}: {percent:>5.1f}% of total expenses")
+        print(f"    {cat:<15}| {percent:>5.1f}% of total expenses")
 
     # Detailed transactions
-    print("\n    Detailed Transactions")
-    for t in transactions:
-        print(t.display_info())
+    print("\n    - Income Transactions -")
+    found_income = False
+    for item in transactions:
+        if item.t_type == "Income":
+            print(f"    {item.display_info()}")
+            found_income = True
+    if not found_income:
+        print("    No income recorded yet.")
 
+    print("\n    - Expense Transactions -")
+    found_expense = False
+    for item in transactions:
+        if item.t_type == "Expense":
+            print(f"    {item.display_info()}")
+            found_expense = True
+    if not found_expense:
+        print("    No expenses recorded yet.")
+
+    # ----- Total Budget Utilization -----
+    total_budget = sum(budget_limits.values())
+
+    if total_budget > 0:
+        utilization = (total_expense / total_budget) * 100
+        print(f"\n    Total Budget Planned : ${total_budget:.2f}")
+        print(f"    Budget Utilization   : {utilization:.1f}%")
+
+        if utilization > 100:
+            print("    Status: You exceeded your overall budget!")
+        elif utilization >= 90:
+            print("    Status: You are very close to your total budget limit.")
+        else:
+            print("    Status: You are within your overall budget.")
+    else:
+        print("    No budgets have been set yet.")
+
+    
+
+    print("\n    ----------------------------")
     input("\n    Press the Enter key to continue...")
         
 # Displaying the Main Menu and calling the functions based on what the user enters.

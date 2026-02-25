@@ -33,7 +33,7 @@ def save_data(transactions, budget_limits):
             for category, limit in budget_limits.items():
                 file.write(f"{category}|{limit}\n")
             
-            # Saving all transactions (income and expense)
+            # Saving all transactions (income and expense) to the text file.
             file.write("[TRANSACTIONS]\n")
             for t in transactions:
                 file.write(f"{t.t_type}|{t.category}|{t.description}|{t.amount}|{t.date}\n")
@@ -135,14 +135,16 @@ def add_expense(transactions, budget_limits):
                 print(f"\n    Successfully added expense of ${amt:.2f} to {expense_cat[choice]}!")
                 category = expense_cat[choice]
                 limit = budget_limits.get(category, 0)
+                # Display the remaining budget if the user has balance remaining.
                 if limit > 0:
                     total_spent = sum(t.amount for t in transactions if t.t_type == "Expense" and t.category == category)
                     remaining = limit - total_spent
                     print(f"    Remaining {category} budget: ${remaining:.2f}")
                 
+                # Save data to text file.
                 save_data(transactions, budget_limits)
                 
-                # Checking if the user is near or over the category budget and displaying warnings.
+                # Checking if the user is near or over the specific category budget and displaying warnings when needed.
                 check_category_limit(expense_cat[choice], budget_limits, transactions)
             else:
                 print("    Error: Amount must be positive.")
@@ -155,17 +157,19 @@ def add_expense(transactions, budget_limits):
 
 # Function to check if user is near or over budget limit.
 def check_category_limit(category, budget_limits, transactions):
-    # Only check if the category has a budget set.
+    # Only check if the category has a budget (more than 0) set.
     if category in budget_limits and budget_limits[category] > 0:
         total_spent = sum(item.amount for item in transactions if item.t_type == "Expense" and item.category == category)
         
         limit = budget_limits[category]
         
-        # Warning messages depending on usage amount.
+        # Warning messages if total spent is greater than the set budget.
         if total_spent > limit:
             print(f"\n    !!! WARNING: You have exceeded your {category} budget by ${total_spent - limit:.2f} !!!")
+        # Approaching limit, 90% or greater.
         elif total_spent >= limit * 0.9:
             print(f"\n    * Caution: You have used { (total_spent/limit)*100 :.1f}% of your {category} budget. *")
+        # Informational message.
         else:
             print(f"\n    * You have used { (total_spent/limit)*100 :.1f}% of your {category} budget. *")
 
@@ -175,6 +179,7 @@ def view_transactions(transactions):
     
     # Displaying all income transactions.
     print("\n    - Income Transactions -")
+    # Checking if income transactions exist.
     found_income = False
     for item in transactions:
         if item.t_type == "Income":
@@ -186,6 +191,7 @@ def view_transactions(transactions):
 
     # Displaying all expense transactions.
     print("\n    - Expense Transactions -")
+    # Checking if expense transactions exist
     found_expense = False
     for item in transactions:
         if item.t_type == "Expense":
@@ -206,16 +212,19 @@ def setting_budget(budget_limits, transactions):
         print(f"    {key}. {value}")
     try:
         choice = int(input("\n    Select a category to set a budget for (1-5): "))
+        # Ask for a budget amount when the user enters a valid choice (category).
         if choice in expense_cat:
             category = expense_cat[choice]
 
             amount = float(input(f"    Enter the monthly budget for {category}: $"))
             
+            # Update the budget_lists dictionary with the new amount.
             if amount > 0:
-                # Update the budget_lists dictionary with the new amount.
                 budget_limits[category] = amount
                 print(f"    Budget for {category} successfully set to ${amount:.2f}.")
                 save_data(transactions, budget_limits)
+                
+            # If the user doesn't add a valid budget amount.
             else:
                 print("    Error: Budget must be zero or greater.")
         else:
@@ -228,6 +237,7 @@ def setting_budget(budget_limits, transactions):
 def view_budget_summary(budget_limits, transactions):
     print(f"\n    --- Budget Summary for This Month ---")
     # Displaying when summary was created.
+    # strftime() allows formatting of how timestamp is displayed.
     print(f"    Summary generated at: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
     
     # Calculate total income and total expenses based on all category transactions.
@@ -238,25 +248,29 @@ def view_budget_summary(budget_limits, transactions):
     print(f"    INCOME:\n    Total Income: ${total_income:.2f}")
     print(f"\n    EXPENSES BY CATEGORY:\n")
     
+    # Formatting as a table/chart
     print(f"    {'Category':<15} | {'Budget':<9} | {'Spent':<9} | {'Remaining':<10}")
     print("    ----------------------------------------------------------")
     
     # Preparing dictionaries to store the total spent and the last transaction date for each category.
     totals = {cat: 0 for cat in budget_limits}
+    # Categories with no budget set appear as Not Applicable.
     last_entry = {cat: "N/A" for cat in budget_limits}
+    
     # Calculating totals and tracking last transaction date.
     for item in transactions:
         if item.t_type == "Expense" and item.category in totals:
             totals[item.category] += item.amount
-            # Update last entry timestamp for this category
+            # Update last entry timestamp for this category.
             last_entry[item.category] = item.date
     
-    # Displaying each category with budget, spent, remaining, and warning status.
+    # Displaying each seperate category with budget, spent, remaining, and warning status.
     for cat, limit in budget_limits.items():
         spent = totals[cat]
         remaining = limit - spent
         status = ""
         if limit > 0:
+            # Warn user if they are over budget.
             if spent > limit:  
                 status = "  !! Warning: You are over budget !!"
             # If user is approaching the limit (around 90%).
@@ -286,11 +300,12 @@ def generate_report(transactions, budget_limits):
     print(f"    Total Expenses : ${total_expense:.2f}")
     print(f"    Current Remaining Balance: ${remaining_balance:.2f}")
 
-    # Prepare a list with category totals, last transaction date, and remaining budget.
+    # Prepare a list with category totals, last transaction date, and remaining budget for each category.
     category_totals = []
     for cat, limit in budget_limits.items():
         spent = sum(t.amount for t in transactions if t.t_type == "Expense" and t.category == cat)
         expenses_in_cat = [t.date for t in transactions if t.t_type == "Expense" and t.category == cat]
+        # If category has no transaction, appear as Not Applicable.
         last_time = max(expenses_in_cat) if expenses_in_cat else "N/A"
         remaining = limit - spent
         # Adding to list.
@@ -300,6 +315,7 @@ def generate_report(transactions, budget_limits):
     category_totals.sort(key=lambda x: x[1], reverse=True)
 
     # Show percentage of the user's total expenses per category.
+    # (How much of their budget is going towards each category).
     print("\n    - Top Expense Distribution by Category -")
     for cat, spent, _, _, _ in category_totals:
         percent = (spent / total_expense * 100) if total_expense else 0
@@ -325,7 +341,8 @@ def generate_report(transactions, budget_limits):
     if not found_expense:
         print("    No expenses recorded yet.")
 
-    # Calculate overall budget utilization.
+    # Calculating overall budget utilization.
+    # Adding all budget amounts to get total.
     total_budget = sum(budget_limits.values())
     if total_budget > 0:
         # Multiplying by 100 to get the percent (out of 100).
@@ -333,7 +350,7 @@ def generate_report(transactions, budget_limits):
         print(f"\n    Total Budget Planned : ${total_budget:.2f}")
         print(f"    Budget Utilization   : {utilization:.1f}%")
 
-        # Displaying budget status depending on how much of the budget was used.
+        # Displaying budget status depending on how much (percent) of the budget was used.
         if utilization > 100:
             print("    Status: Oh no! You exceeded your overall budget!")
         elif utilization >= 90:

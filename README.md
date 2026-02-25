@@ -24,5 +24,15 @@ Error handling is built into the system to prevent crashes from invalid input. T
 
 Overall, the Personal Budget Calculator demonstrates how programming concepts can be applied to real world financial management. Beyond being a functional budgeting tool, the project serves as a strong example of how to design and implement a complete software application that solves a practical everyday problem.
 
+What you need to use this program:
+Python 3 installed
+Code editor or IDE (VsCode,etc)
+
+
+Authors:
+Heba Wali
+Kamsi Ikwuetoghu
+Zara Sajjadieh
+
 
 

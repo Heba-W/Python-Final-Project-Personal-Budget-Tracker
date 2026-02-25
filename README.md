@@ -1,4 +1,4 @@
-# README PERSONAL_BDGET_CALCULATOR _HKZ
+# README PERSONAL_BUDGET_CALCULATOR_HKZ
 Personal_Budget_Tracker.py is a high level application built and designed using the programming language know as "Python."
 Developed with Jupyter notebook support, the structure and logic of the code are organized into modular sections to improve readability, efficiency, and testing.
 This program uses proper naming conventions for variables and fuctions, this makes the code more understandable

@@ -227,9 +227,10 @@ def setting_budget(budget_limits, transactions):
 # Function to view budget summary, including spending and remaining balance.
 def view_budget_summary(budget_limits, transactions):
     print(f"\n    --- Budget Summary for This Month ---")
+    # Displaying when summary was created.
     print(f"    Summary generated at: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
     
-    # Calculate total income and total expenses from all categories.
+    # Calculate total income and total expenses based on all category transactions.
     total_income = sum(t.amount for t in transactions if t.t_type == "Income")
     total_expense = sum(t.amount for t in transactions if t.t_type == "Expense")
     current_balance = total_income - total_expense
@@ -295,7 +296,7 @@ def generate_report(transactions, budget_limits):
         # Adding to list.
         category_totals.append((cat, spent, limit, remaining, last_time))
 
-    # Sort categories by total spent (descending order) to highlight the largest expenses.
+    # Sort categories by total amount spent (descending order) to highlight the largest expenses.
     category_totals.sort(key=lambda x: x[1], reverse=True)
 
     # Show percentage of the user's total expenses per category.

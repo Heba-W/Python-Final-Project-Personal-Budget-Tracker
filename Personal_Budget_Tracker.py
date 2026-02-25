@@ -4,7 +4,7 @@
 import os
 from datetime import datetime
 
-# Transaction class, which represents one single fincancial record.
+# Transaction class, which represents one single financial record.
 class Transaction:
     def __init__(self, t_type, category, description, amount):
         # Income or Expense
@@ -97,7 +97,7 @@ def add_income(transactions, budget_limits):
     try:
         amount = float(input("    Enter the amount: "))
         if amount >= 1:
-            # Use the list passed into the function (income_list) and the Class.
+            # Create a new income transaction object and add it to the transactions list.
             new_income = Transaction("Income", "N/A", description, amount)
             transactions.append(new_income)
             print("    Income was added successfully!")
@@ -114,7 +114,7 @@ def add_income(transactions, budget_limits):
         print("    Error: Please enter a valid number for the amount.")
 
     print("\n")
-    enter = input("    Press the Enter key to continue...")
+    input("    Press the Enter key to continue...")
 
 # Function to add expense
 def add_expense(transactions, budget_limits):

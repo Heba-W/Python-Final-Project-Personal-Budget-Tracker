@@ -121,7 +121,7 @@ def add_expense(transactions, budget_limits):
     print("\n    --- Add Expense ---")
     print("    Select a Category:")
     for key, value in expense_cat.items():
-        print(f"{key}. {value}")
+        print(f"    {key}. {value}")
     try:
         choice = int(input("\n    Enter a category (1-5): "))
         if choice in expense_cat:
@@ -203,9 +203,9 @@ def setting_budget(budget_limits, transactions):
     print("\n    --- Set Monthly Budget ---")
     # Showing list of categories for the user to choose from.
     for key, value in expense_cat.items():
-        print(f"{key}. {value}")
+        print(f"    {key}. {value}")
     try:
-        choice = int(input("    Select a category to set a budget for (1-5): "))
+        choice = int(input("\n    Select a category to set a budget for (1-5): "))
         if choice in expense_cat:
             category = expense_cat[choice]
 

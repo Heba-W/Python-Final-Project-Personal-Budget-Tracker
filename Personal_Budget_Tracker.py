@@ -38,7 +38,7 @@ def save_data(transactions, budget_limits):
             for t in transactions:
                 file.write(f"{t.t_type}|{t.category}|{t.description}|{t.amount}|{t.date}\n")
     except OSError as e:
-        print(f"Error saving data: {e}")
+        print(f"    Error saving data: {e}")
 
 # Reading from the file to recreate/restore the previous Transaction objects budget limits.
 def load_data(transactions, budget_limits):
@@ -78,7 +78,7 @@ def load_data(transactions, budget_limits):
                     # Skip corrupted lines.
                     continue
     except OSError as e:
-        print(f"Error loading data: {e}")
+        print(f"    Error loading data: {e}")
 
 # Dictionary to map numbers to categories for user selection.
 expense_cat = {

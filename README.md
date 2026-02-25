@@ -28,7 +28,7 @@ Overall, the Personal Budget Calculator demonstrates how programming concepts ca
 How to use this program:
 Run the program in Python to start it
 
-Choose an option from the menu by typing a number (1–7)
+Choose an option from the menu by typing a number (1-7)
 
 Option 1: Add income
   Type a description and amount, the program saves it and shows your balance

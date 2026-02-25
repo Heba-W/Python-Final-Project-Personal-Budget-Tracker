@@ -1,57 +1,53 @@
 # Python Final Project - Personal Budget Calculator
 
+# Importing necessary modules.
 import os
 from datetime import datetime
 
+# Transaction class, which represents one single fincancial record.
 class Transaction:
     def __init__(self, t_type, category, description, amount):
-        self.t_type = t_type # Income or Expense
-        self.category = category        # "Food", "Bills", "Salary", etc.
+        # Income or Expense
+        self.t_type = t_type
+        # "Food", "Bills", "Salary", etc.
+        self.category = category
         self.description = description
         self.amount = amount
         self.date = datetime.now().strftime("%Y-%m-%d %H:%M")
-        
+    
+    # Formatting the transaction to appear organized.
     def display_info(self):
         if self.t_type == "Income":
             return f"{self.date} | {self.description:<10} | ${self.amount:>8.2f}"
         return f"{self.date} | {self.category} | {self.description:<10} | ${self.amount:>8.2f}"
 
-# -----------------------------
-# SAVE / LOAD FUNCTIONS
-# -----------------------------
+# Text file where all information is stored.
 DATA_FILE = "budget_data.txt"
 
+# Saving all data, such as transactions and budget limits, to a text file.
 def save_data(transactions, budget_limits):
-    # """
-    # Saves all financial data to a text file.
-    # Sections:
-    #   [BUDGET_LIMITS] -> category|limit
-    #   [TRANSACTIONS]  -> type|category|description|amount|date
-    # """
     try:
         with open(DATA_FILE, "w", encoding="utf-8") as file:
-            # Save budget limits
+            # Saving budget limits
             file.write("[BUDGET_LIMITS]\n")
             for category, limit in budget_limits.items():
                 file.write(f"{category}|{limit}\n")
             
-            # Save all transactions (income + expense)
+            # Saving all transactions (income and expense)
             file.write("[TRANSACTIONS]\n")
             for t in transactions:
                 file.write(f"{t.t_type}|{t.category}|{t.description}|{t.amount}|{t.date}\n")
     except OSError as e:
         print(f"Error saving data: {e}")
 
+# Reading from the file to recreate/restore the previous Transaction objects budget limits.
 def load_data(transactions, budget_limits):
-    """
-    Loads financial data from the file.
-    Reconstructs transactions and budget limits.
-    """
+    # If a data file doesn't exist, create an empty one so persistence always exists.
     if not os.path.exists(DATA_FILE):
-        # Create empty data file so persistence always exists
         save_data(transactions, budget_limits)
         return
 
+    # Determining which section of the file is being read.
     section = None
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as file:
@@ -65,22 +61,26 @@ def load_data(transactions, budget_limits):
                 elif line == "[TRANSACTIONS]":
                     section = "TRANSACTIONS"
                     continue
-
+                
                 try:
+                    # Budget Limits are stored in dictionary as category: limit.
                     if section == "BUDGET_LIMITS":
                         category, limit = line.split("|")
                         budget_limits[category] = float(limit)
+                    # Recreating the transaction objects
                     elif section == "TRANSACTIONS":
                         t_type, category, description, amount, date = line.split("|")
                         t = Transaction(t_type, category, description, float(amount))
-                        t.date = date  # restore original timestamp
+                        # Restore original timestamp.
+                        t.date = date
                         transactions.append(t)
                 except ValueError:
-                    # skip corrupted lines
+                    # Skip corrupted lines.
                     continue
     except OSError as e:
         print(f"Error loading data: {e}")
 
+# Dictionary to map numbers to categories for user selection.
 expense_cat = {
     1: "Food",
     2: "Transportation",
@@ -96,18 +96,17 @@ def add_income(transactions, budget_limits):
     description = input("    Enter income description: ")
     try:
         amount = float(input("    Enter the amount: "))
-
-        # Simplified logic: if amount is valid, save it. 
         if amount >= 1:
-            # Use the list passed into the function (income_list) 
-            # and the Class blueprint
+            # Use the list passed into the function (income_list) and the Class.
             new_income = Transaction("Income", "N/A", description, amount)
             transactions.append(new_income)
             print("    Income was added successfully!")
+            # Calculate total income and total expenses from all recorded transactions.
             total_income = sum(t.amount for t in transactions if t.t_type == "Income")
             total_expense = sum(t.amount for t in transactions if t.t_type == "Expense")
             balance = total_income - total_expense
             print(f"    Current balance: ${balance:.2f}")
+            # Save data to text file.
             save_data(transactions, budget_limits)
         else:
             print("    Error: Amount must be at least $1.00. Transaction cancelled.")      
@@ -129,7 +128,8 @@ def add_expense(transactions, budget_limits):
             desc = input("    Enter expense description: ")
             amt = float(input("    Enter the amount: "))
             if amt > 0:
-                # Use the Transaction class as required by rubric
+                # Create new expense transaction using the class.
+                # Also adding it to the list, updating the remaining budget, and saving to file.
                 new_expense = Transaction("Expense", expense_cat[choice], desc, amt)
                 transactions.append(new_expense)
                 print(f"\n    Successfully added expense of ${amt:.2f} to {expense_cat[choice]}!")
@@ -142,7 +142,7 @@ def add_expense(transactions, budget_limits):
                 
                 save_data(transactions, budget_limits)
                 
-                # Check budget for this specific category (Task 3 requirement)
+                # Checking if the user is near or over the category budget and displaying warnings.
                 check_category_limit(expense_cat[choice], budget_limits, transactions)
             else:
                 print("    Error: Amount must be positive.")
@@ -153,12 +153,15 @@ def add_expense(transactions, budget_limits):
     
     input("\n    Press the Enter key to continue...")
 
+# Function to check if user is near or over budget limit.
 def check_category_limit(category, budget_limits, transactions):
+    # Only check if the category has a budget set.
     if category in budget_limits and budget_limits[category] > 0:
         total_spent = sum(item.amount for item in transactions if item.t_type == "Expense" and item.category == category)
         
         limit = budget_limits[category]
         
+        # Warning messages depending on usage amount.
         if total_spent > limit:
             print(f"\n    !!! WARNING: You have exceeded your {category} budget by ${total_spent - limit:.2f} !!!")
         elif total_spent >= limit * 0.9:
@@ -169,19 +172,24 @@ def check_category_limit(category, budget_limits, transactions):
 # Function to view all transactions
 def view_transactions(transactions):
     print("\n    --- View All Transactions ---")
+    
+    # Displaying all income transactions.
     print("\n    - Income Transactions -")
     found_income = False
     for item in transactions:
         if item.t_type == "Income":
+            # Formatting info for each income transaction.
             print(f"    {item.display_info()}")
             found_income = True
     if not found_income:
         print("    No income recorded yet.")
 
+    # Displaying all expense transactions.
     print("\n    - Expense Transactions -")
     found_expense = False
     for item in transactions:
         if item.t_type == "Expense":
+            # Formatting info for each income transaction.
             print(f"    {item.display_info()}")
             found_expense = True
     if not found_expense:
@@ -190,20 +198,21 @@ def view_transactions(transactions):
     print("\n    -----------------------------")
     input("\n    Press the Enter key to continue...")
 
-# Function to Set a Monthly Budget
+# Function to set a monthly budget for a specfic expense category.
 def setting_budget(budget_limits, transactions):
     print("\n    --- Set Monthly Budget ---")
-    # Display numbered categories (reuse your expense_cat dictionary)
+    # Showing list of categories for the user to choose from.
     for key, value in expense_cat.items():
         print(f"{key}. {value}")
     try:
         choice = int(input("    Select a category to set a budget for (1-5): "))
         if choice in expense_cat:
             category = expense_cat[choice]
-            
+
             amount = float(input(f"    Enter the monthly budget for {category}: $"))
             
             if amount >= 0:
+                # Update the budget_lists dictionary with the new amount.
                 budget_limits[category] = amount
                 print(f"    Budget for {category} successfully set to ${amount:.2f}.")
                 save_data(transactions, budget_limits)
@@ -215,11 +224,12 @@ def setting_budget(budget_limits, transactions):
         print("    Error: Please enter numeric values only.")
     input("\n    Press the Enter key to continue...")
 
-# Function to view a budget summary
+# Function to view budget summary, including spending and remaining balance.
 def view_budget_summary(budget_limits, transactions):
     print(f"\n    --- Budget Summary for This Month ---")
     print(f"    Summary generated at: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
-    # Calculate total income and total expenses first
+    
+    # Calculate total income and total expenses from all categories.
     total_income = sum(t.amount for t in transactions if t.t_type == "Income")
     total_expense = sum(t.amount for t in transactions if t.t_type == "Expense")
     current_balance = total_income - total_expense
@@ -230,17 +240,17 @@ def view_budget_summary(budget_limits, transactions):
     print(f"    {'Category':<15} | {'Budget':<9} | {'Spent':<9} | {'Remaining':<10}")
     print("    ----------------------------------------------------------")
     
-    # Calculating totals for each seperate category
+    # Preparing dictionaries to store the total spent and the last transaction date for each category.
     totals = {cat: 0 for cat in budget_limits}
     last_entry = {cat: "N/A" for cat in budget_limits}
-    # Calculate totals and track last transaction date per category
+    # Calculating totals and tracking last transaction date.
     for item in transactions:
         if item.t_type == "Expense" and item.category in totals:
             totals[item.category] += item.amount
             # Update last entry timestamp for this category
             last_entry[item.category] = item.date
     
-    # Display the math
+    # Displaying each category with budget, spent, remaining, and warning status.
     for cat, limit in budget_limits.items():
         spent = totals[cat]
         remaining = limit - spent
@@ -248,50 +258,53 @@ def view_budget_summary(budget_limits, transactions):
         if limit > 0:
             if spent > limit:  
                 status = "  !! Warning: You are over budget !!"
+            # If user is approaching the limit (around 90%).
             elif spent >= limit * 0.9:
                 status = f" *Warning: 90% or more used.*"
+        # Display info in chart/table format.
         print(f"    {cat:<15} | ${limit:>8.2f} | ${spent:>8.2f} | ${remaining:>9.2f} | {last_entry[cat]:<16} {status}")
 
+    # Display totals and current balance remaining.
     print(f"\n    Total Expenses: ${total_expense:.2f}")
     print(f"    Current remaining Balance: ${current_balance:.2f}")
     input("\n    Press the Enter key to continue...")
     
-
-
-# Function to generate a final report
+# Function to generate a detailed monthly report
 def generate_report(transactions, budget_limits):
     print("\n\n    --- Monthly Financial Report ---\n")
     print(f"    Report generated at: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
-    # Calculate totals
+    # Calculating overall totals for income, expenses, and remaining balance.
     total_income = sum(t.amount for t in transactions if t.t_type == "Income")
     total_expense = sum(t.amount for t in transactions if t.t_type == "Expense")
     remaining_balance = total_income - total_expense
 
+    # Summary of totals
     print("\n    - Summary -")
     print(f"    Total Income   : ${total_income:.2f}")
     print(f"    Total Expenses : ${total_expense:.2f}")
     print(f"    Current Remaining Balance: ${remaining_balance:.2f}")
 
-    # Prepare list of categories with totals, last entry, remaining, etc.
+    # Prepare a list with category totals, last transaction date, and remaining budget.
     category_totals = []
     for cat, limit in budget_limits.items():
         spent = sum(t.amount for t in transactions if t.t_type == "Expense" and t.category == cat)
         expenses_in_cat = [t.date for t in transactions if t.t_type == "Expense" and t.category == cat]
         last_time = max(expenses_in_cat) if expenses_in_cat else "N/A"
         remaining = limit - spent
+        # Adding to list.
         category_totals.append((cat, spent, limit, remaining, last_time))
 
-    # Sort categories by total spent descending
+    # Sort categories by total spent (descending order) to highlight the largest expenses.
     category_totals.sort(key=lambda x: x[1], reverse=True)
 
-    # Show % of total expenses per category
+    # Show percentage of the user's total expenses per category.
     print("\n    - Top Expense Distribution by Category -")
     for cat, spent, _, _, _ in category_totals:
         percent = (spent / total_expense * 100) if total_expense else 0
         print(f"    {cat:<15}| {percent:>5.1f}% of total expenses")
 
-    # Detailed transactions
+    # Show detailed income transactions.
     print("\n    - Income Transactions -")
     found_income = False
     for item in transactions:
@@ -301,6 +314,7 @@ def generate_report(transactions, budget_limits):
     if not found_income:
         print("    No income recorded yet.")
 
+    # Show detailed expense transactions.
     print("\n    - Expense Transactions -")
     found_expense = False
     for item in transactions:
@@ -310,40 +324,41 @@ def generate_report(transactions, budget_limits):
     if not found_expense:
         print("    No expenses recorded yet.")
 
-    # ----- Total Budget Utilization -----
+    # Calculate overall budget utilization.
     total_budget = sum(budget_limits.values())
-
     if total_budget > 0:
+        # Multiplying by 100 to get the percent (out of 100).
         utilization = (total_expense / total_budget) * 100
         print(f"\n    Total Budget Planned : ${total_budget:.2f}")
         print(f"    Budget Utilization   : {utilization:.1f}%")
 
+        # Displaying budget status depending on how much of the budget was used.
         if utilization > 100:
-            print("    Status: You exceeded your overall budget!")
+            print("    Status: Oh no! You exceeded your overall budget!")
         elif utilization >= 90:
-            print("    Status: You are very close to your total budget limit.")
+            print("    Status: Be careful! You are very close to your total budget limit.")
         else:
-            print("    Status: You are within your overall budget.")
+            print("    Status: You are within your overall budget. Great!")
     else:
         print("    No budgets have been set yet.")
-
-    
 
     print("\n    ----------------------------")
     input("\n    Press the Enter key to continue...")
         
-# Displaying the Main Menu and calling the functions based on what the user enters.
+# Main Program Function.
+# Displays the menu and handles user interactions.
 def main():
-    # Initialize main data structures. Starting at 0 as a placeholder.
+    # Initializing the data structures for transactions and budgets.
     transactions = []
+    # Budgets start at 0 as a placeholder.
     budget_limits = {"Food":0, "Transportation":0, "Entertainment":0, "Bills":0, "Other":0}
 
-    # Load previously saved data
+    # Load previously saved data from file.
     load_data(transactions, budget_limits)
     
-    # Main Menu System
+    # Main Menu Loop.
+    # Repeatedly displays options until the user chooses to exit.
     while True:
-        # Displaying options.
         print("\n\n  ----- Welcome to your Personal Budget Tracker! -----")
         print("\n  ----- What Would You Like to Do? -----\n")
         print("    1. Add Income")
@@ -355,35 +370,30 @@ def main():
         print("    7. Save and Exit")
         option = input("\n    Please enter your option (1, 2, 3, 4, 5, 6, 7): ")
 
+        # Calling the appropriate function based on what the user enters.
         if option == "1":
             add_income(transactions, budget_limits)
-            
         elif option == "2":
-            add_expense(transactions, budget_limits)
-            
+            add_expense(transactions, budget_limits)  
         elif option == "3":
-            view_transactions(transactions)
-            
+            view_transactions(transactions)    
         elif option == "4":
-            setting_budget(budget_limits, transactions)
-            
+            setting_budget(budget_limits, transactions)  
         elif option == "5":
-            view_budget_summary(budget_limits, transactions)
-            
+            view_budget_summary(budget_limits, transactions)   
         elif option == "6":
             generate_report(transactions, budget_limits)
-            
-        # If the user inputs 7, the loop will stop and end the program.
         elif option == "7":
+            # Saving all data to the text file and exiting the program.
             save_data(transactions, budget_limits)
             print("\n    Thanks for using the Personal Budget Tracker! Goodbye!")
             print("\n  ----------------------------------------------------")
             break
         else:
-            # If the user inputs something other than 1–7
+            # Handling invalid menu selections.
             print("\n    Invalid option. Please try again and enter a number between 1 and 7.")
             print("\n  ----------------------------------------------------")
 
-# Running the program.
+# Run the program.
 if __name__ == "__main__":
     main()

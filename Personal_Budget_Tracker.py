@@ -387,7 +387,7 @@ def main():
         elif option == "7":
             # Saving all data to the text file and exiting the program.
             save_data(transactions, budget_limits)
-            print("\n    Your information hase been saved. Thanks for using the Personal Budget Tracker! Goodbye!")
+            print("\n    Your information has been saved. Thanks for using the Personal Budget Tracker! Goodbye!")
             print("\n  ----------------------------------------------------")
             break
         else:

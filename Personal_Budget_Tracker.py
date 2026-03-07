@@ -408,7 +408,7 @@ def main():
             print("\n  ----------------------------------------------------")
             break
         else:
-            # Handling invalid menu selections.
+            # Handling invalid menu selections.4
             print("\n    Invalid option. Please try again and enter a number between 1 and 7.")
             print("\n  ----------------------------------------------------")
 
